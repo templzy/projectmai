@@ -15,6 +15,27 @@ vector<int> generate_message(mt19937& gen) {
     return msg;
 }
 
+// Функция для имитации передачи одного бита
+int transmit_bit(int bit, double error_prob, int repeats, mt19937& gen) {
+    if (repeats == 1) {
+        bernoulli_distribution error(error_prob);
+        return error(gen) ? 1 - bit : bit;
+    }
+    
+    // Для 3 и 5 повторений
+    bernoulli_distribution error(error_prob);
+    int ones_count = 0;
+    for (int i = 0; i < repeats; ++i) {
+        int received = error(gen) ? 1 - bit : bit;
+        if (received == 1) ones_count++;
+    }
+    
+    // Мажоритарное голосование
+    if (repeats == 3) return (ones_count >= 2) ? 1 : 0;
+    if (repeats == 5) return (ones_count >= 3) ? 1 : 0;
+    return 0;
+}
+
 int main() {
     mt19937 gen(42); // Фиксированный сид для воспроизводимости
     vector<double> probs = {0.005, 0.02, 0.05};
